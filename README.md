@@ -1,4 +1,4 @@
-# WackyURL - High-Scale URL Shortener
+# SwalpaURL - High-Scale URL Shortener
 
 > A distributed system simulation project showcasing real-world challenges in building fault-tolerant, high-performance URL shortening services with **wacky names** instead of hash-based IDs.
 
@@ -7,7 +7,7 @@
 
 ##  Project Overview
 
-WackyURL is a production-grade URL shortener that generates memorable names like `Grumpy-Falcon-1234` instead of cryptic strings like `aB3xY`. This project demonstrates:
+SwalpaURL is a production-grade URL shortener that generates memorable names like `Grumpy-Falcon-1234` instead of cryptic strings like `aB3xY`. This project demonstrates:
 
 - **High-Scale Architecture**: Handles 1000+ RPS with sub-20ms redirect latency
 - **Distributed Systems Patterns**: Cache-aside, pre-generation workers, graceful degradation
@@ -112,9 +112,9 @@ BASE_URL=http://localhost:8080
 # Database
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=wackyurl
+POSTGRES_USER=SwalpaURL
 POSTGRES_PASSWORD=your_secure_password
-POSTGRES_DB=wackyurl
+POSTGRES_DB=SwalpaURL
 
 # Redis
 REDIS_HOST=localhost
@@ -143,8 +143,8 @@ docker-compose up -d postgres redis
 
 **PostgreSQL:**
 ```bash
-createdb wackyurl
-psql wackyurl < scripts/schema.sql
+createdb SwalpaURL
+psql SwalpaURL < scripts/schema.sql
 ```
 
 **Redis:**
@@ -301,7 +301,7 @@ curl http://localhost:8080/health/ready
 ### Build Image
 
 ```bash
-docker build -t wackyurl:latest .
+docker build -t SwalpaURL:latest .
 ```
 
 ### Run Container
@@ -310,7 +310,7 @@ docker build -t wackyurl:latest .
 docker run -p 8080:8080 \
   -e POSTGRES_HOST=host.docker.internal \
   -e REDIS_HOST=host.docker.internal \
-  wackyurl:latest
+  SwalpaURL:latest
 ```
 
 ### Docker Compose (Full Stack)
@@ -320,7 +320,7 @@ docker-compose up
 ```
 
 This starts:
-- WackyURL app (port 8080)
+- SwalpaURL app (port 8080)
 - PostgreSQL (port 5432)
 - Redis (port 6379)
 - Nginx (port 80)
@@ -338,26 +338,26 @@ This starts:
 
 ```bash
 # Create namespace
-kubectl create namespace wackyurl
+kubectl create namespace SwalpaURL
 
 # Apply manifests
 kubectl apply -f deployments/k8s/
 
 # Check status
-kubectl get pods -n wackyurl
+kubectl get pods -n SwalpaURL
 
 # Get service URL
-kubectl get svc -n wackyurl
+kubectl get svc -n SwalpaURL
 ```
 
 ### Access Application
 
 ```bash
 # Port forward for local access
-kubectl port-forward -n wackyurl svc/wackyurl 8080:80
+kubectl port-forward -n SwalpaURL svc/SwalpaURL 8080:80
 
 # Or use Ingress (if configured)
-curl http://wackyurl.local
+curl http://SwalpaURL.local
 ```
 
 ---
@@ -434,7 +434,7 @@ air
 
 ### Key Generation Service (KGS)
 
-WackyURL uses a **pre-generation strategy** to avoid race conditions:
+SwalpaURL uses a **pre-generation strategy** to avoid race conditions:
 
 1. **Worker Process**: Generates 5000 names and stores in Redis Set (`available_names`)
 2. **Atomic Claim**: `SPOP` atomically pops one name when shortening a URL
@@ -480,7 +480,7 @@ curl -H "X-Simulated-Region: eu-west" http://localhost:8080/
 **Check dependencies:**
 ```bash
 # Verify PostgreSQL is running
-psql -h localhost -U wackyurl -c "SELECT 1"
+psql -h localhost -U SwalpaURL -c "SELECT 1"
 
 # Verify Redis is running
 redis-cli ping
