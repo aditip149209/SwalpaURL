@@ -17,7 +17,7 @@ SwalpaURL is a production-grade URL shortener that generates memorable names lik
 
 ---
 
-## 🏗️ Project Structure (Standard Go Layout)
+##  Project Structure (Standard Go Layout)
 
 ```
 SwalpaURL/
@@ -74,7 +74,7 @@ SwalpaURL/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -186,7 +186,7 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ### Unit Tests
 
@@ -247,7 +247,7 @@ k6 run --vus 100 --duration 30s scripts/load-test.js
 
 ---
 
-## 📊 API Reference
+##  API Reference
 
 ### Shorten URL
 
@@ -296,7 +296,7 @@ curl http://localhost:8080/health/ready
 
 ---
 
-## 🐳 Docker Deployment
+##  Docker Deployment
 
 ### Build Image
 
@@ -327,7 +327,7 @@ This starts:
 
 ---
 
-## ☸️ Kubernetes Deployment
+##  Kubernetes Deployment
 
 ### Prerequisites
 
@@ -362,7 +362,7 @@ curl http://SwalpaURL.local
 
 ---
 
-## 📈 Performance Benchmarks
+##  Performance Benchmarks
 
 ### Latency Targets
 
@@ -387,7 +387,7 @@ BenchmarkGenerator_GenerateBatch  100000      12000 ns/op  8192 B/op 1 allocs/op
 
 ---
 
-## 🔧 Development
+##  Development
 
 ### Available Make Commands
 
@@ -430,7 +430,7 @@ air
 
 ---
 
-## 🎓 Architecture Deep Dive
+##  Architecture Deep Dive
 
 ### Key Generation Service (KGS)
 
@@ -473,7 +473,7 @@ curl -H "X-Simulated-Region: eu-west" http://localhost:8080/
 
 ---
 
-## 🛠️ Troubleshooting
+##  Troubleshooting
 
 ### Application Won't Start
 
@@ -528,7 +528,7 @@ go tool pprof cpu.prof
 
 ---
 
-## 🔐 Security Considerations
+##  Security Considerations
 
 - [ ] Rate limiting (implement middleware)
 - [ ] Input sanitization (URL validation in place)
@@ -540,35 +540,20 @@ go tool pprof cpu.prof
 
 ---
 
-## 📜 License
+## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-**Before submitting:**
-```bash
-make pre-commit  # Runs fmt + test + lint
-```
+MIT License 
 
 ---
 
-## 📞 Support
+##  Support
 
 - **Issues**: [GitHub Issues](https://github.com/aditip149209/SwalpaURL/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/aditip149209/SwalpaURL/discussions)
 
 ---
 
-## 🎯 Roadmap
+##  Roadmap
 
 - [x] Core URL shortening functionality
 - [x] Wacky name generation
@@ -589,4 +574,4 @@ make pre-commit  # Runs fmt + test + lint
 
 ---
 
-**Built with ❤️ as a distributed systems learning project**
+**Built with passion as a distributed systems learning project**
