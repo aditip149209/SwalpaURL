@@ -1,17 +1,17 @@
-CREATE TABLE "keypool" (
+CREATE TABLE "key_pool" (
   "id" bigserial PRIMARY KEY,
-  "shortUrl" varchar,
-  "created_at" timestamp NOT NULL,
-  "is_used" bool
+  "short_url" varchar NOT NULL UNIQUE,
+  "created_at" timestamp NOT NULL DEFAULT NOW(),
+  "is_used" bool DEFAULT false
 );
 
-CREATE TABLE "keylink" (
+CREATE TABLE "key_link" (
   "id" bigserial PRIMARY KEY,
-  "shortUrl" varchar,
-  "originalUrl" text,
-  "created_at" timestamp NOT NULL
+  "short_url" varchar UNIQUE NOT NULL,
+  "original_url" text NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT NOW(),
+  FOREIGN KEY ("short_url") REFERENCES "key_pool" ("short_url") ON DELETE CASCADE
 );
 
-CREATE INDEX ON "keypool" ("is_used");
-
-ALTER TABLE "keypool" ADD FOREIGN KEY ("shortUrl") REFERENCES "keylink" ("shortUrl") DEFERRABLE INITIALLY IMMEDIATE;
+CREATE INDEX ON "key_pool" ("is_used");
+CREATE INDEX ON "key_pool" ("short_url");

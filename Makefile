@@ -6,7 +6,7 @@ createdb:
 	docker exec -it my_postgres createdb --username=root --owner=root postgres
 
 dropdb:
-	docker exec -it my_postgres dropdb --username=root --owner=root postgres
+	docker exec -it my_postgres dropdb --username=root postgres
 
 migrateup:
 	migrate -path db/migrations/ -database "$(DB_URL)" -verbose up 
