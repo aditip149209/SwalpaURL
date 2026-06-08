@@ -26,11 +26,11 @@ func NewKeyGenerationService(repo repository.Repository, poolSize int) *KeyGener
 
 // Initialize loads word lists and pre-generates keys into the database
 // This should be called once at server startup
-func (ks *KeyGenerationService) Initialize(ctx context.Context, basePath string) error {
+func (ks *KeyGenerationService) Initialize(ctx context.Context) error {
 	log.Printf("Initializing KeyGenerationService with pool size: %d", ks.poolSize)
 
 	// Step 1: Load word lists
-	generator, err := wacky.Load(basePath)
+	generator, err := wacky.Load()
 	if err != nil {
 		return fmt.Errorf("failed to load word lists: %w", err)
 	}

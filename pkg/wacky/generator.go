@@ -2,10 +2,9 @@ package wacky
 
 import (
 	"bufio"
+	"embed"
 	"fmt"
 	"math/rand"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -17,20 +16,20 @@ type WordLists struct {
 	mu         sync.RWMutex
 }
 
+//go:embed private/*
+var LocalWordlistFS embed.FS
+
 // Load reads adjectives.txt and nouns.txt from the private/ directory
 // Returns a WordLists struct ready for name generation
-func Load(basePath string) (*WordLists, error) {
-	adjPath := filepath.Join(basePath, "private", "adjectives.txt")
-	nounPath := filepath.Join(basePath, "private", "nouns.txt")
-
-	adjectives, err := readWordList(adjPath)
+func Load() (*WordLists, error) {
+	adjectives, err := readWordList(LocalWordlistFS, "private/adjectives.txt")
 	if err != nil {
-		return nil, fmt.Errorf("failed to load adjectives: %w", err)
+		return nil, fmt.Errorf("failed to load adjectives from embed: %w", err)
 	}
 
-	nouns, err := readWordList(nounPath)
+	nouns, err := readWordList(LocalWordlistFS, "private/nouns.txt")
 	if err != nil {
-		return nil, fmt.Errorf("failed to load nouns: %w", err)
+		return nil, fmt.Errorf("failed to load nouns from embed: %w", err)
 	}
 
 	if len(adjectives) == 0 {
@@ -44,11 +43,12 @@ func Load(basePath string) (*WordLists, error) {
 		Adjectives: adjectives,
 		Nouns:      nouns,
 	}, nil
+
 }
 
 // readWordList reads a file line-by-line and returns non-empty trimmed lines
-func readWordList(filePath string) ([]string, error) {
-	file, err := os.Open(filePath)
+func readWordList(fs embed.FS, filePath string) ([]string, error) {
+	file, err := fs.Open(filePath)
 	if err != nil {
 		return nil, err
 	}

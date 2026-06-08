@@ -5,21 +5,25 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"time"
 
 	"github.com/aditip149209/SwalpaUrl/internal/repository"
+	"github.com/redis/go-redis/v9"
 )
 
 // URLService handles URL shortening and redirection logic
 type URLService struct {
 	keyService *KeyGenerationService
 	repo       repository.Repository
+	rdb        *redis.Client
 }
 
 // NewURLService creates a new URLService instance
-func NewURLService(keyService *KeyGenerationService, repo repository.Repository) *URLService {
+func NewURLService(keyService *KeyGenerationService, repo repository.Repository, rdb *redis.Client) *URLService {
 	return &URLService{
 		keyService: keyService,
 		repo:       repo,
+		rdb:        rdb,
 	}
 }
 
@@ -56,5 +60,27 @@ func validateURL(urlStr string) error {
 }
 
 func (us *URLService) Getoriginal_url(ctx context.Context, shortCode string) (string, error) {
-	return us.repo.Getoriginal_url(ctx, shortCode)
+	cachedUrl, err := us.rdb.Get(ctx, shortCode).Result()
+
+	if err == nil {
+		log.Printf("Redis cache hit for short url: %s", shortCode)
+		return cachedUrl, nil
+	}
+
+	log.Printf("Checking postgres for original url for %s", shortCode)
+
+	originalUrl, err := us.repo.Getoriginal_url(ctx, shortCode)
+	if err != nil {
+		return "", err
+	}
+
+	err = us.rdb.Set(ctx, shortCode, originalUrl, 24*time.Hour).Err()
+	if err != nil {
+		log.Printf("Failed to save original url to redis")
+	} else {
+		log.Printf("Was able to save url to redis")
+	}
+
+	return originalUrl, err
+
 }

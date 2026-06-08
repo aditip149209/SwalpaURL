@@ -2,14 +2,19 @@ package handlers
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/aditip149209/SwalpaUrl/internal/services"
 )
+
+//go:embed templates/*
+var templateFS embed.FS
 
 // ShortenRequest represents the incoming request to shorten a URL
 type ShortenRequest struct {
@@ -212,5 +217,13 @@ func (uh *URLHandler) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "../../templates/index.html")
+	tmpl, err := template.ParseFS(templateFS, "templates/index.html")
+	if err != nil {
+		log.Printf("Template parsing error: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	tmpl.Execute(w, nil)
 }

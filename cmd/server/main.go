@@ -12,6 +12,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/aditip149209/SwalpaUrl/internal/handlers"
 	"github.com/aditip149209/SwalpaUrl/internal/repository"
@@ -73,19 +74,30 @@ func main() {
 	keyService := services.NewKeyGenerationService(repo, poolSize)
 
 	// Get base path for loading word lists
-	basePath := "/home/aditi/Documents/SwalpaURL"
+	// basePath := "/home/aditi/Documents/SwalpaURL"
 
 	// Initialize key pool (pre-generate and populate database)
 	ctx, cancel = context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	if err := keyService.Initialize(ctx, basePath); err != nil {
+	if err := keyService.Initialize(ctx); err != nil {
 		log.Fatalf("Failed to initialize KeyGenerationService: %v", err)
 	}
 	log.Println("✓ KeyGenerationService initialized with pre-generated keys")
 
+	log.Println("Init redis")
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		log.Fatalf("Failed to establish contact with redis instance context %v", err)
+	}
+	log.Printf("Connected to redis")
 	// Initialize URLService
-	urlService := services.NewURLService(keyService, repo)
+	urlService := services.NewURLService(keyService, repo, rdb)
 	log.Println("✓ URLService initialized")
 
 	// Initialize HTTP handlers
