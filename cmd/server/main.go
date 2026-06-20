@@ -86,8 +86,12 @@ func main() {
 	log.Println("✓ KeyGenerationService initialized with pre-generated keys")
 
 	log.Println("Init redis")
+	redisAddr := os.Getenv("REDIS_URL")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})

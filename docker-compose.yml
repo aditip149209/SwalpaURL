@@ -1,0 +1,78 @@
+
+
+services:
+  # 1. Your Self-Contained Go App
+  web_app:
+    build: .
+    container_name: swalpaurl_app
+    # Note: We NO LONGER expose "8080:8080" to the public. 
+    # Only Nginx will talk to your Go app inside the private Docker network.
+    environment:
+      DATABASE_URL: "postgres://swalpa_user:swalpa_password@postgres_db:5432/swalpaurl?sslmode=disable"
+      REDIS_URL: "redis_cache:6379" 
+      POOL_SIZE: "50000"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis_cache:
+        condition: service_healthy
+
+  # 2. Your In-Memory Redis Cache Engine
+  redis_cache:
+    image: redis:7-alpine
+    container_name: swalpaurl_redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 3. Your Main PostgreSQL Database Storage
+  postgres_db:
+    image: postgres:alpine
+    container_name: swalpaurl_db
+    environment:
+      POSTGRES_USER: swalpa_user
+      POSTGRES_PASSWORD: swalpa_password
+      POSTGRES_DB: swalpaurl
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./db/migrations/000001_init_schema.up.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swalpa_user -d swalpaurl"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 4. The Nginx Reverse Proxy Gatekeeper
+  nginx_proxy:
+      image: nginx:alpine
+      container_name: swalpaurl_nginx
+      ports:
+        - "81:80"   # For HTTP verification and redirection
+        - "8443:443" # For Secure HTTPS Traffic
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        - certbot_etc:/etc/letsencrypt:ro
+        - certbot_var:/var/lib/letsencrypt:ro
+        - webroot_path:/var/www/certbot:ro
+      depends_on:
+        - web_app
+
+  # 2. Add the Automated Certbot Engine Layer
+  certbot:
+    image: certbot/certbot
+    container_name: swalpaurl_certbot
+    volumes:
+      - certbot_etc:/etc/letsencrypt
+      - certbot_var:/var/lib/letsencrypt
+      - webroot_path:/var/www/certbot
+    # This checks every 12 hours to see if your certificate is close to expiring and auto-renews it!
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+
+# Add the shared volumes at the very bottom of your file so the containers can see each other's data
+volumes:
+  postgres_data:
+  certbot_etc:
+  certbot_var:
+  webroot_path:
