@@ -43,6 +43,9 @@ func main() {
 	if dbDSN == "" {
 		dbDSN = defaultDSN
 	}
+	baseURL := os.Getenv("BASE_URL")
+
+	log.Printf("[BOOT] Application successfully started. Base URL configured as: %s", baseURL)
 
 	poolSize := defaultPoolSize
 
