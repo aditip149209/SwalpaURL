@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/aditip149209/SwalpaUrl/internal/services"
@@ -126,24 +127,35 @@ func (uh *URLHandler) Shorten(w http.ResponseWriter, r *http.Request) {
 	if isHTMX {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusOK)
+		baseURL := os.Getenv("BASE_URL")
+		if baseURL == "" {
+			baseURL = "http://localhost:8080"
+		}
+
+		displayURL := baseURL
+		if len(displayURL) > 8 && displayURL[:8] == "https://" {
+			displayURL = displayURL[8:]
+		} else if len(displayURL) > 7 && displayURL[:7] == "http://" {
+			displayURL = displayURL[7:]
+		}
 
 		// This gorgeous, fully responsive component box replaces the raw JSON text!
 		fmt.Fprintf(w, `
-			<div class="bg-gray-700/40 border border-gray-600/60 p-5 rounded-lg shadow-inner text-center mt-2 space-y-3">
-				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-950 text-green-400 border border-green-500/20">
-					✓ Shortlink Generated
-				</span>
-				<p class="text-xs text-gray-400 font-medium break-all px-2">Target: %s</p>
-				<div class="flex items-center justify-between bg-gray-900/90 p-3 rounded-lg border border-gray-700/80 gap-3">
-					<a href="http://localhost:8080/%s" target="_blank" class="text-md font-bold text-green-400 hover:text-green-300 hover:underline break-all tracking-wide text-left pl-1">
-						localhost:8080/%s
-					</a>
-					<button onclick="navigator.clipboard.writeText('http://localhost:8080/%s')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold px-3 py-2 rounded-md border border-gray-600 active:scale-95 transition-all cursor-pointer shadow">
-						Copy
-					</button>
-				</div>
-			</div>
-		`, targetURL, shortCode, shortCode, shortCode)
+            <div class="bg-gray-700/40 border border-gray-600/60 p-5 rounded-lg shadow-inner text-center mt-2 space-y-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-950 text-green-400 border border-green-500/20">
+                    ✓ Shortlink Generated
+                </span>
+                <p class="text-xs text-gray-400 font-medium break-all px-2">Target: %s</p>
+                <div class="flex items-center justify-between bg-gray-900/90 p-3 rounded-lg border border-gray-700/80 gap-3">
+                    <a href="%s/%s" target="_blank" class="text-md font-bold text-green-400 hover:text-green-300 hover:underline break-all tracking-wide text-left pl-1">
+                        %s/%s
+                    </a>
+                    <button onclick="navigator.clipboard.writeText('%s/%s')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold px-3 py-2 rounded-md border border-gray-600 active:scale-95 transition-all cursor-pointer shadow">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        `, targetURL, baseURL, shortCode, displayURL, shortCode, baseURL, shortCode)
 		return
 	}
 
