@@ -1,19 +1,19 @@
 services:
-  # 1. Your Self-Contained Go App
+   # 1. Your Self-Contained Go App
   web_app:
-    build: .
+    image: image_name_in_ecr
     container_name: swalpaurl_app
-    # Note: We NO LONGER expose "8080:8080" to the public. 
-    # Only Nginx will talk to your Go app inside the private Docker network.
-    environment:
-      DATABASE_URL: "postgres://swalpa_user:swalpa_password@postgres_db:5432/swalpaurl?sslmode=disable"
-      REDIS_URL: "redis_cache:6379" 
-      POOL_SIZE: "50000"
+    restart: always
+    env_file:
+      - env_file_name
+    expose:
+      - "8080"
     depends_on:
       postgres_db:
         condition: service_healthy
       redis_cache:
         condition: service_healthy
+
 
   # 2. Your In-Memory Redis Cache Engine
   redis_cache:
@@ -42,21 +42,22 @@ services:
       timeout: 5s
       retries: 5
 
-  # 4. The Nginx Reverse Proxy Gatekeeper
+
   nginx_proxy:
       image: nginx:alpine
       container_name: swalpaurl_nginx
       ports:
-        - "81:80"   # For HTTP verification and redirection
-        - "8443:443" # For Secure HTTPS Traffic
+        - "80:80"   
+        - "443:443" 
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        - /home/ubuntu/swalpaurl_certs:/etc/letsencrypt:ro
       depends_on:
         - web_app
 
-  # 2. Add the Automated Certbot Engine Layer
 
-# Add the shared volumes at the very bottom of your file so the containers can see each other's data
+
+
 volumes:
   postgres_data:
   webroot_path:
