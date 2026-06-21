@@ -1,0 +1,58 @@
+name: Continuous Integration & Deployment
+
+on:
+  push:
+    branches: [ "main" ] # Triggers automatically whenever you push code to main
+
+jobs:
+  build-and-ship:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, Tag, and Push Image to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: app/swalpaurl
+        IMAGE_TAG: latest
+      run: |
+        # Build the fresh Go binary with your updated os.Getenv code changes
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        # Ship it securely up to AWS ECR
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  deploy-to-ec2:
+    needs: build-and-ship
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: SSH into EC2 and Refresh Containers
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: swalpa.3utilities.com  # Uses your dynamic domain to find the server
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd ~/SwalpaURL
+          
+          # 1. Log into your ECR registry inside the EC2 machine so it has permission to pull
+          aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 616077260563.dkr.ecr.eu-north-1.amazonaws.com
+          
+          # 2. Pull down the fresh image layer we just pushed from GitHub
+          docker compose pull web_app
+          
+          # 3. Gracefully swap the old container with the new version with zero downtime
+          docker compose up -d --force-recreate web_app
